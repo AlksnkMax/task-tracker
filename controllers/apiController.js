@@ -1,5 +1,5 @@
 var User = require('../models/user');
-var List = require('../models/project');
+var Project = require('../models/project');
 var fs = require('fs');
 var apiController = {};
 
@@ -237,6 +237,29 @@ apiController.changeBackground = function (req, res) {
     });
 
     res.end();
+};
+
+
+////////////////////////////////////////////////////////////////////////
+
+apiController.getProjectList = function (req, res) {
+  Project.find({}, function(err, projects) {
+    var projectMap = [];
+    projects.forEach(function(project) {
+      projectMap.push(project);
+    });
+    res.send(projectMap);
+  });
+};
+
+apiController.createProject = function (req, res) {
+	var newProject = new Project();
+	newProject.projectName = req.body.projectName;
+	newProject.author = req.user._id;
+	newProject.save(function(err){
+		if (err) return console.error(err);
+    apiController.getProjectList(req, res);
+	});
 };
 
 module.exports = apiController;

@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var passport = require('passport');
 var morgan = require('morgan');
 var mongoose = require('mongoose');
+var session = require('express-session')
 var app = express();
 
 var apiRoutes = require('./routes/apiRoutes');
@@ -24,8 +25,10 @@ app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(session({ secret: 'anything' }));
 app.use(passport.initialize());
 app.use(passport.session());
+
 
 app.use(function(req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', '*');

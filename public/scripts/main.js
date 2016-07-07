@@ -52,102 +52,101 @@
 
 /***/ },
 /* 1 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	var ProjectBox = React.createClass({
-	  displayName: "ProjectBox",
+	exports.ProjectBox = undefined;
 
+	var _modal = __webpack_require__(2);
+
+	var ProjectBox = React.createClass({
+	  displayName: 'ProjectBox',
+
+	  loadProjectsFromServer: function loadProjectsFromServer() {
+	    $.ajax({
+	      url: '/api/getProjectList',
+	      dataType: 'json',
+	      cache: false,
+	      success: function (data) {
+	        this.setState({ data: data });
+	      }.bind(this),
+	      error: function (xhr, status, err) {
+	        console.error(this.props.url, status, err.toString());
+	      }.bind(this)
+	    });
+	  },
 	  handleProjectSubmit: function handleProjectSubmit(project) {
+	    project.projectName = project.title;
 	    var projects = this.state.data;
-	    project.id = Date.now();
+	    project._id = Date.now();
 	    var newProjects = projects.concat([project]);
 	    this.setState({ data: newProjects });
+	    $.ajax({
+	      url: '/api/createProject',
+	      dataType: 'json',
+	      type: 'POST',
+	      data: {
+	        'projectName': project.title
+	      },
+	      success: function (data) {
+	        this.setState({ data: data });
+	      }.bind(this),
+	      error: function (xhr, status, err) {
+	        this.setState({ data: projects });
+	      }.bind(this)
+	    });
 	  },
 	  getInitialState: function getInitialState() {
 	    return { data: [] };
 	  },
-	  /*componentDidMount: function() {
+	  componentDidMount: function componentDidMount() {
 	    this.loadProjectsFromServer();
 	    setInterval(this.loadCommentsFromServer, this.props.pollInterval);
-	  },*/
+	  },
 	  render: function render() {
 	    return React.createElement(
-	      "div",
-	      { className: "commentBox" },
+	      'div',
+	      { className: 'commentBox' },
 	      React.createElement(
-	        "h2",
+	        'h2',
 	        null,
-	        "Projects"
+	        'Projects'
 	      ),
-	      React.createElement(ProjectList, { data: this.state.data }),
-	      React.createElement(ProjectForm, { onProjectSubmit: this.handleProjectSubmit })
+	      React.createElement(_modal.ModalButton, { onSubmit: this.handleProjectSubmit }),
+	      React.createElement(ProjectList, { data: this.state.data })
 	    );
 	  }
 	});
 
 	var ProjectList = React.createClass({
-	  displayName: "ProjectList",
+	  displayName: 'ProjectList',
 
 	  render: function render() {
 	    var projectNodes = this.props.data.map(function (project) {
-	      return React.createElement(Project, { key: project.id, title: project.title });
+	      return React.createElement(Project, { key: project._id, title: project.projectName });
 	    });
 	    return React.createElement(
-	      "div",
-	      { className: "projectList" },
+	      'div',
+	      { className: 'projectList' },
 	      projectNodes
 	    );
 	  }
 	});
 
-	var ProjectForm = React.createClass({
-	  displayName: "ProjectForm",
-
-	  getInitialState: function getInitialState() {
-	    return { title: '' };
-	  },
-	  handleTitleChange: function handleTitleChange(e) {
-	    this.setState({ title: e.target.value });
-	  },
-	  handleSubmit: function handleSubmit(e) {
-	    e.preventDefault();
-	    var title = this.state.title.trim();
-	    if (!title) {
-	      return;
-	    }
-	    this.props.onProjectSubmit({ title: title });
-	    this.setState({ title: '' });
-	  },
-	  render: function render() {
-	    return React.createElement(
-	      "form",
-	      { className: "projectForm", onSubmit: this.handleSubmit },
-	      React.createElement("input", {
-	        type: "text",
-	        placeholder: "The name of the project",
-	        value: this.state.title,
-	        onChange: this.handleTitleChange
-	      }),
-	      React.createElement("input", { type: "submit", value: "Post" })
-	    );
-	  }
-	});
-
 	var Project = React.createClass({
-	  displayName: "Project",
+	  displayName: 'Project',
 
 	  render: function render() {
 	    return React.createElement(
-	      "div",
-	      { className: "project" },
+	      'div',
+	      { className: 'project' },
 	      React.createElement(
-	        "h3",
-	        { className: "projectName" },
+	        'h3',
+	        { className: 'projectName' },
 	        this.props.title
 	      )
 	    );
@@ -160,6 +159,137 @@
 	  <ProjectBox url="/api/comments" pollInterval={2000} />,
 	  document.getElementById('content')
 	);*/
+
+/***/ },
+/* 2 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var Modal = React.createClass({
+	  displayName: 'Modal',
+
+	  getInitialState: function getInitialState() {
+	    return {
+	      visible: false,
+	      cancel_title: 'Cancel',
+	      action_title: 'Ok',
+	      title: '',
+	      text: ''
+	    };
+	  },
+	  // Обработчик закрытия модального окна, вызовет обработчик отказа
+	  close: function close() {
+	    this.setState({
+	      visible: false,
+	      title: ''
+	    }, function () {
+	      return this.promise.reject();
+	    });
+	  },
+	  // Обработчик действия модального окна, вызовет обработчик действия
+	  action: function action() {
+	    this.props.onSubmit({ title: this.state.title });
+	    this.setState({
+	      visible: false,
+	      title: ''
+	    }, function () {
+	      return this.promise.resolve();
+	    });
+	  },
+	  // Обработчик открытия модального окна. Возвращает promise
+	  // ( при желании, можно передавать также названия кнопок )
+	  open: function open(text) {
+	    this.setState({
+	      visible: true,
+	      text: text
+	    });
+
+	    // promise необходимо обновлять при каждом новом запуске окна
+	    this.promise = new $.Deferred();
+	    return this.promise;
+	  },
+	  handleTitleChange: function handleTitleChange(e) {
+	    this.setState({ title: e.target.value });
+	  },
+	  render: function render() {
+	    var modalClass = this.state.visible ? "modal fade in" : "modal fade";
+	    var modalStyles = this.state.visible ? { display: "block" } : {};
+	    var backdrop = this.state.visible ? React.createElement('div', { className: 'modal-backdrop fade in', onClick: this.close, style: { zIndex: "1" } }) : null;
+
+	    var title = this.state.title ? React.createElement(
+	      'div',
+	      { className: 'modal-header' },
+	      React.createElement(
+	        'h4',
+	        { className: 'modal-title' },
+	        this.state.title
+	      )
+	    ) : null;
+
+	    return React.createElement(
+	      'div',
+	      { className: modalClass, style: modalStyles },
+	      backdrop,
+	      React.createElement(
+	        'div',
+	        { className: 'modal-dialog', style: { zIndex: "2" } },
+	        React.createElement(
+	          'div',
+	          { className: 'modal-content' },
+	          this.state.text,
+	          React.createElement('input', {
+	            className: 'form-control',
+	            type: 'text',
+	            value: this.state.title,
+	            onChange: this.handleTitleChange
+	          }),
+	          React.createElement(
+	            'div',
+	            { className: 'modal-footer' },
+	            React.createElement(
+	              'button',
+	              { type: 'button', className: 'btn btn-default',
+	                onClick: this.close },
+	              this.state.cancel_title
+	            ),
+	            React.createElement(
+	              'button',
+	              { type: 'button', className: 'btn btn-primary',
+	                onClick: this.action },
+	              this.state.action_title
+	            )
+	          )
+	        )
+	      )
+	    );
+	  }
+	});
+
+	var ModalButton = React.createClass({
+	  displayName: 'ModalButton',
+
+	  popup: function popup() {
+	    this.refs.foo.open();
+	  },
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        'a',
+	        { onClick: this.popup, className: 'btn btn-primary' },
+	        'Create project'
+	      ),
+	      React.createElement(Modal, { ref: 'foo', onSubmit: this.props.onSubmit })
+	    );
+	  }
+	});
+
+	exports.ModalButton = ModalButton;
 
 /***/ }
 /******/ ]);

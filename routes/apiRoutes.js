@@ -42,4 +42,10 @@ router.post('/removeSubtask', apiController.removeSubtask);
 
 router.post('/changeBackground', apiController.changeBackground);
 
+//////////////////////////////////////////////////////////////
+
+router.post('/createProject', apiController.createProject);
+
+router.get('/getProjectList', apiController.getProjectList);
+
 module.exports = router;
