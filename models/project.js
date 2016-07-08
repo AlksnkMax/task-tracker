@@ -11,7 +11,7 @@ var projectSchema = new mongoose.Schema({
 		comments:
 		[{
 			author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-      description: String
+      text: String
 		}]
 	}]
 });

@@ -4,7 +4,7 @@ var passport = require('passport');
 
 router.get('/', function(req, res) {
   if(!req.isAuthenticated()) {
-     res.sendfile('./public/sign.html');
+     res.redirect('/login');
   } else {
     var user = req.user;
     if(user !== undefined) {
@@ -14,13 +14,27 @@ router.get('/', function(req, res) {
   }
 });
 
-router.post('/signup', passport.authenticate('local-signup'), function(req, res) {
-  res.redirect('/');
+router.post('/signup', passport.authenticate('local-signup', { successRedirect: '/',
+                          failureRedirect: '/signup'}), function(req, res) {
   res.send(req.user);
 });
 
-router.post('/login', passport.authenticate('local-login'), function(req, res) {
-  res.redirect('/');
+router.get('/signup', function(req, res) {
+  if(req.isAuthenticated()) {
+     res.redirect('/');
+  }
+  res.sendfile('./public/signup.html');
+});
+
+router.get('/login', function(req, res) {
+  if(req.isAuthenticated()) {
+     res.redirect('/');
+  }
+  res.sendfile('./public/login.html');
+});
+
+router.post('/login', passport.authenticate('local-login', { successRedirect: '/',
+                          failureRedirect: '/login'}), function(req, res) {
   res.send(req.user);
 });
 

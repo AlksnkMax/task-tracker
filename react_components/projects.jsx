@@ -44,10 +44,11 @@ var ProjectBox = React.createClass({
   },
   render: function() {
     return (
-      <div className="commentBox">
+      <div>
         <h2>Projects</h2>
-        <ModalButton onSubmit={this.handleProjectSubmit}/>
-        <ProjectList data={this.state.data} />
+        <ModalButton onSubmit={this.handleProjectSubmit} buttonTitle='Create project'
+          windowTitle='Enter the name of the project'/>
+        <ProjectList data={this.state.data}/>
       </div>
     );
   }
@@ -55,9 +56,10 @@ var ProjectBox = React.createClass({
 
 var ProjectList = React.createClass({
   render: function() {
+    var self = this;
     var projectNodes = this.props.data.map(function(project) {
       return (
-        <Project key={project._id} title={project.projectName}>
+        <Project key={project._id} title={project.projectName} project={project}>
         </Project>
       );
     });
@@ -70,12 +72,16 @@ var ProjectList = React.createClass({
 });
 
 var Project = React.createClass({
+  handle: function() {
+    PROJECT = this.props.project;
+    window.setProject();
+  },
   render: function() {
     return (
       <div className="project">
-        <h3 className="projectName">
+        <a href={'#/tasks'} onClick={this.handle} className="projectName">
           {this.props.title}
-        </h3>
+        </a>
       </div>
     );
   }
@@ -84,8 +90,3 @@ var Project = React.createClass({
 
 
 export {ProjectBox};
-
-/*ReactDOM.render(
-  <ProjectBox url="/api/comments" pollInterval={2000} />,
-  document.getElementById('content')
-);*/

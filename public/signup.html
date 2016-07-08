@@ -7,20 +7,7 @@
   </head>
   <body>
     <div class="container">
-      <form class="form-signin" id="sign-in" method="post" action="/login">
-        <h2 class="form-signin-heading">Please sign in</h2>
-        <label for="email" class="sr-only">Email address</label>
-        <input name="email" type="email" id="inputEmail" class="form-control" placeholder="Email address" required="" autofocus="">
-        <label for="password" class="sr-only">Password</label>
-        <input name="password" type="password" id="inputPassword" class="form-control" placeholder="Password" required="">
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-        <a onclick="(function(e){e.preventDefault;
-          document.getElementById('sign-up').style.display = 'block';
-          document.getElementById('sign-in').style.display = 'none'})(event)">
-          Register
-        </a>
-      </form>
-      <form class="form-signin" id="sign-up" method="post" action="/signup" style="display: none">
+      <form class="form-signin" id="sign-up" method="post" action="/signup">
         <h2 class="form-signin-heading">Please sign up</h2>
         <label for="firstName" class="sr-only">First name</label>
         <input name="firstName" type="text" class="form-control" placeholder="First name" required="" autofocus="">
@@ -36,11 +23,7 @@
           </label>
         </div>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
-        <a onclick="(function(e){e.preventDefault;
-          document.getElementById('sign-in').style.display = 'block';
-          document.getElementById('sign-up').style.display = 'none'})(event)">
-          Login
-        </a>
+        <a href="/login">Login</a>
       </form>
     </div>
   </body>

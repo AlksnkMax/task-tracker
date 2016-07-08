@@ -84,12 +84,12 @@ var Modal = React.createClass({
 
 var ModalButton = React.createClass({
   popup: function () {
-    this.refs.foo.open();
+    this.refs.foo.open(this.props.windowTitle);
   },
   render: function() {
     return (
       <div>
-        <a onClick={this.popup} className="btn btn-primary">Create project</a>
+        <a onClick={this.popup} className="btn btn-primary">{this.props.buttonTitle}</a>
         <Modal ref="foo" onSubmit={this.props.onSubmit}/>
       </div>
     );
