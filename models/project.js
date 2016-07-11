@@ -7,13 +7,15 @@ var projectSchema = new mongoose.Schema({
 	tasks:
   [{
 		taskName: String,
+		isFinished: Boolean,
 		author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 		comments:
 		[{
 			author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-      text: String
+      text: String,
+			date: Date
 		}]
 	}]
-});
+},{ versionKey: false });
 
 module.exports = mongoose.model('Project', projectSchema);

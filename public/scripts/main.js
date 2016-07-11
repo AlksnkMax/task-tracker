@@ -50,37 +50,80 @@
 
 	var _projects = __webpack_require__(65);
 
-	var _tasks = __webpack_require__(67);
+	var _tasks = __webpack_require__(68);
 
-	var _comments = __webpack_require__(68);
+	var _comments = __webpack_require__(69);
 
 	var App = React.createClass({
 	  displayName: "App",
 
+	  getInitialState: function getInitialState() {
+	    return { user: {
+	        firstName: '',
+	        lastName: '',
+	        email: ''
+	      } };
+	  },
+	  componentDidMount: function componentDidMount() {
+	    $.ajax({
+	      url: '/api/getUser',
+	      dataType: 'json',
+	      cache: false,
+	      success: function (data) {
+	        this.setState({ user: data });
+	        this.render();
+	      }.bind(this),
+	      error: function (xhr, status, err) {
+	        console.error(this.props.url, status, err.toString());
+	      }.bind(this)
+	    });
+	  },
 	  render: function render() {
+	    var position = this.state.user.isManager ? 'Manager' : 'Developer';
 	    return React.createElement(
-	      _reactRouter.Router,
-	      { history: _reactRouter.hashHistory },
-	      React.createElement(_reactRouter.Route, { path: "/", component: _projects.ProjectBox }),
-	      React.createElement(_reactRouter.Route, { path: "/tasks", component: _tasks.TaskBox }),
-	      React.createElement(_reactRouter.Route, { path: "/tasks/comments", component: _comments.CommentBox })
+	      "div",
+	      { className: "main" },
+	      React.createElement(
+	        "a",
+	        { className: "sign-out", href: "/signout" },
+	        "Sign out"
+	      ),
+	      React.createElement(
+	        "div",
+	        { className: "user" },
+	        React.createElement(
+	          "p",
+	          { className: "name" },
+	          this.state.user.firstName + " " + this.state.user.lastName
+	        ),
+	        React.createElement(
+	          "p",
+	          { className: "email" },
+	          this.state.user.email
+	        ),
+	        React.createElement(
+	          "p",
+	          null,
+	          position
+	        )
+	      ),
+	      React.createElement(
+	        "h1",
+	        null,
+	        "CodeX Software"
+	      ),
+	      React.createElement(
+	        _reactRouter.Router,
+	        { history: _reactRouter.hashHistory },
+	        React.createElement(_reactRouter.Route, { path: "/", component: _projects.ProjectBox }),
+	        React.createElement(_reactRouter.Route, { path: "/tasks", component: _tasks.TaskBox }),
+	        React.createElement(_reactRouter.Route, { path: "/tasks/comments", component: _comments.CommentBox })
+	      )
 	    );
 	  }
 	});
 
-	ReactDOM.render(React.createElement(App, null)
-	/*<Router history={hashHistory}>
-	  <Route path="" component={App}>
-	    <Route path="/" component={ProjectBox}/>
-	    <Route path={"/:projectName"} component={TaskBox}/>
-	  </Route>
-	</Router>*/
-	, document.getElementById('content'));
-
-	/*ReactDOM.render(
-	  <ProjectBox url="/api/comments" pollInterval={2000} />,
-	  document.getElementById('content')
-	);*/
+	ReactDOM.render(React.createElement(App, null), document.getElementById('content'));
 
 /***/ },
 /* 1 */
@@ -5818,23 +5861,38 @@
 	    });
 	  },
 	  getInitialState: function getInitialState() {
-	    return { data: [] };
+	    return {
+	      data: [],
+	      user: { isManager: false }
+	    };
 	  },
 	  componentDidMount: function componentDidMount() {
 	    this.loadProjectsFromServer();
-	    setInterval(this.loadCommentsFromServer, this.props.pollInterval);
+	    $.ajax({
+	      url: '/api/getUser',
+	      dataType: 'json',
+	      cache: false,
+	      success: function (data) {
+	        this.setState({ user: data });
+	        this.render();
+	      }.bind(this),
+	      error: function (xhr, status, err) {
+	        console.error(this.props.url, status, err.toString());
+	      }.bind(this)
+	    });
 	  },
 	  render: function render() {
+	    var modal = this.state.user.isManager ? React.createElement(_modal.ModalButton, { onSubmit: this.handleProjectSubmit, buttonTitle: 'Create project',
+	      windowTitle: 'Enter the name of the project' }) : '';
 	    return React.createElement(
 	      'div',
-	      null,
+	      { className: 'project-container' },
 	      React.createElement(
 	        'h2',
 	        null,
 	        'Projects'
 	      ),
-	      React.createElement(_modal.ModalButton, { onSubmit: this.handleProjectSubmit, buttonTitle: 'Create project',
-	        windowTitle: 'Enter the name of the project' }),
+	      modal,
 	      React.createElement(ProjectList, { data: this.state.data })
 	    );
 	  }
@@ -5850,7 +5908,7 @@
 	    });
 	    return React.createElement(
 	      'div',
-	      { className: 'projectList' },
+	      { className: 'project-list' },
 	      projectNodes
 	    );
 	  }
@@ -5862,14 +5920,15 @@
 	  handle: function handle() {
 	    PROJECT = this.props.project;
 	    window.setProject();
+	    window.location.href = '#/tasks';
 	  },
 	  render: function render() {
 	    return React.createElement(
 	      'div',
-	      { className: 'project' },
+	      { className: 'project', onClick: this.handle },
 	      React.createElement(
 	        'a',
-	        { href: '#/tasks', onClick: this.handle, className: 'projectName' },
+	        { className: 'project-name' },
 	        this.props.title
 	      )
 	    );
@@ -5880,13 +5939,17 @@
 
 /***/ },
 /* 66 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	exports.ModalButton = undefined;
+
+	var _devs = __webpack_require__(67);
+
 	var Modal = React.createClass({
 	  displayName: 'Modal',
 
@@ -5899,7 +5962,6 @@
 	      text: ''
 	    };
 	  },
-	  // Обработчик закрытия модального окна, вызовет обработчик отказа
 	  close: function close() {
 	    this.setState({
 	      visible: false,
@@ -5908,7 +5970,6 @@
 	      return this.promise.reject();
 	    });
 	  },
-	  // Обработчик действия модального окна, вызовет обработчик действия
 	  action: function action() {
 	    this.props.onSubmit({ title: this.state.title });
 	    this.setState({
@@ -5918,17 +5979,16 @@
 	      return this.promise.resolve();
 	    });
 	  },
-	  // Обработчик открытия модального окна. Возвращает promise
-	  // ( при желании, можно передавать также названия кнопок )
 	  open: function open(text) {
 	    this.setState({
 	      visible: true,
 	      text: text
 	    });
-
-	    // promise необходимо обновлять при каждом новом запуске окна
 	    this.promise = new $.Deferred();
 	    return this.promise;
+	  },
+	  loadDevs: function loadDevs() {
+	    this.refs.foo.loadDevs();
 	  },
 	  handleTitleChange: function handleTitleChange(e) {
 	    this.setState({ title: e.target.value });
@@ -5938,16 +5998,13 @@
 	    var modalStyles = this.state.visible ? { display: "block" } : {};
 	    var backdrop = this.state.visible ? React.createElement('div', { className: 'modal-backdrop fade in', onClick: this.close, style: { zIndex: "1" } }) : null;
 
-	    var title = this.state.title ? React.createElement(
-	      'div',
-	      { className: 'modal-header' },
-	      React.createElement(
-	        'h4',
-	        { className: 'modal-title' },
-	        this.state.title
-	      )
-	    ) : null;
-
+	    var inputOutput = this.props.devs ? React.createElement(_devs.DevList, { ref: 'foo', scope: this.props.devScope, onSubmit: this.props.onSubmit, remove: this.props.remove }) : React.createElement('input', { className: 'form-control', type: 'text', value: this.state.title, onChange: this.handleTitleChange });
+	    var okBtn = !this.props.devs ? React.createElement(
+	      'button',
+	      { type: 'button', className: 'btn btn-primary btn-ok',
+	        onClick: this.action },
+	      this.state.action_title
+	    ) : '';
 	    return React.createElement(
 	      'div',
 	      { className: modalClass, style: modalStyles },
@@ -5959,26 +6016,16 @@
 	          'div',
 	          { className: 'modal-content' },
 	          this.state.text,
-	          React.createElement('input', {
-	            className: 'form-control',
-	            type: 'text',
-	            value: this.state.title,
-	            onChange: this.handleTitleChange
-	          }),
+	          inputOutput,
 	          React.createElement(
 	            'div',
 	            { className: 'modal-footer' },
+	            okBtn,
 	            React.createElement(
 	              'button',
 	              { type: 'button', className: 'btn btn-default',
 	                onClick: this.close },
 	              this.state.cancel_title
-	            ),
-	            React.createElement(
-	              'button',
-	              { type: 'button', className: 'btn btn-primary',
-	                onClick: this.action },
-	              this.state.action_title
 	            )
 	          )
 	        )
@@ -5993,16 +6040,20 @@
 	  popup: function popup() {
 	    this.refs.foo.open(this.props.windowTitle);
 	  },
+	  loadDevs: function loadDevs() {
+	    this.refs.foo.loadDevs();
+	  },
 	  render: function render() {
 	    return React.createElement(
 	      'div',
 	      null,
 	      React.createElement(
 	        'a',
-	        { onClick: this.popup, className: 'btn btn-primary' },
+	        { onClick: this.popup, className: "btn btn-primary remove-" + this.props.remove },
 	        this.props.buttonTitle
 	      ),
-	      React.createElement(Modal, { ref: 'foo', onSubmit: this.props.onSubmit })
+	      React.createElement(Modal, { ref: 'foo', onSubmit: this.props.onSubmit, remove: this.props.remove,
+	        devScope: this.props.devScope, devs: this.props.devs })
 	    );
 	  }
 	});
@@ -6018,9 +6069,156 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	exports.DevList = exports.DevBox = undefined;
+
+	var _modal = __webpack_require__(66);
+
+	var DevBox = React.createClass({
+	  displayName: 'DevBox',
+
+	  handleDeveloperSubmit: function handleDeveloperSubmit(developer, remove) {
+	    var url = remove ? 'removeDeveloper' : 'addDeveloper';
+	    $.ajax({
+	      url: '/api/' + url,
+	      dataType: 'json',
+	      type: 'POST',
+	      data: {
+	        'email': developer.title,
+	        'projectId': PROJECT._id
+	      },
+	      success: function (data) {
+	        this.refs.foo.loadDevs();
+	        this.refs.fooo.loadDevs();
+	        this.refs.foooo.loadDevs();
+	      }.bind(this)
+	    });
+	    if (remove) {
+	      $.ajax({
+	        url: '/api/updateTaskAuthor',
+	        dataType: 'json',
+	        type: 'POST',
+	        data: {
+	          'email': developer.title,
+	          'projectId': PROJECT._id
+	        },
+	        success: function (data) {
+	          this.props.loadTasks();
+	        }.bind(this)
+	      });
+	    }
+	  },
+	  render: function render() {
+	    var addBtn = this.props.isManager ? React.createElement(_modal.ModalButton, { remove: false, onSubmit: this.handleDeveloperSubmit,
+	      buttonTitle: 'Add developer', devScope: false, devs: true, ref: 'foo' }) : '';
+	    var removeBtn = this.props.isManager ? React.createElement(_modal.ModalButton, { remove: true, onSubmit: this.handleDeveloperSubmit,
+	      buttonTitle: 'Delete developer', devScope: true, devs: true, ref: 'fooo' }) : '';
+	    return React.createElement(
+	      'div',
+	      { className: 'dev-box' },
+	      addBtn,
+	      removeBtn,
+	      React.createElement(DevList, { scope: true, ref: 'foooo', notClickable: true })
+	    );
+	  }
+	});
+
+	var DevList = React.createClass({
+	  displayName: 'DevList',
+
+	  loadDevs: function loadDevs() {
+	    if (PROJECT) {
+	      var url = this.props.scope ? 'getDevListInProject' : 'getDevList';
+	      $.ajax({
+	        url: '/api/' + url,
+	        dataType: 'json',
+	        type: 'POST',
+	        data: { 'projectId': PROJECT._id },
+	        success: function (data) {
+	          this.setState({ devs: data });
+	        }.bind(this),
+	        error: function (xhr, status, err) {
+	          console.error(this.props.url, status, err.toString());
+	        }.bind(this)
+	      });
+	    } else {
+	      this.loadDevs();
+	    }
+	  },
+	  componentDidMount: function componentDidMount() {
+	    this.loadDevs();
+	  },
+	  getInitialState: function getInitialState() {
+	    return {
+	      devs: []
+	    };
+	  },
+	  render: function render() {
+	    var self = this;
+	    var devNodes = this.state.devs.map(function (dev) {
+	      return React.createElement(Dev, { key: dev._id, dev: dev, notClickable: self.props.notClickable,
+	        onSubmit: self.props.onSubmit, remove: self.props.remove });
+	    });
+	    return React.createElement(
+	      'div',
+	      { className: 'dev-list' },
+	      devNodes
+	    );
+	  }
+	});
+
+	var Dev = React.createClass({
+	  displayName: 'Dev',
+
+	  submit: function submit() {
+	    this.props.onSubmit({ title: this.props.dev.email }, this.props.remove);
+	  },
+	  render: function render() {
+	    var name = this.props.dev.firstName + ' ' + this.props.dev.lastName + ' ';
+	    var email = this.props.dev.email;
+	    var dev = this.props.notClickable ? React.createElement(
+	      'p',
+	      null,
+	      React.createElement(
+	        'span',
+	        null,
+	        name
+	      ),
+	      email
+	    ) : React.createElement(
+	      'a',
+	      { onClick: this.submit },
+	      React.createElement(
+	        'span',
+	        null,
+	        name
+	      ),
+	      email
+	    );
+	    return React.createElement(
+	      'div',
+	      null,
+	      dev
+	    );
+	  }
+	});
+
+	exports.DevBox = DevBox;
+	exports.DevList = DevList;
+
+/***/ },
+/* 68 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
 	exports.TaskBox = undefined;
 
 	var _modal = __webpack_require__(66);
+
+	var _devs = __webpack_require__(67);
 
 	var TaskBox = React.createClass({
 	  displayName: 'TaskBox',
@@ -6031,7 +6229,9 @@
 	        url: '/api/getTaskList',
 	        dataType: 'json',
 	        type: 'POST',
-	        data: PROJECT,
+	        data: {
+	          '_id': PROJECT._id
+	        },
 	        success: function (data) {
 	          this.setState({ data: data });
 	        }.bind(this),
@@ -6066,28 +6266,46 @@
 	    });
 	  },
 	  getInitialState: function getInitialState() {
-	    return { data: [] };
+	    return {
+	      data: [],
+	      user: { isManager: false }
+	    };
 	  },
 	  componentDidMount: function componentDidMount() {
 	    this.loadTasksFromServer();
-	    setInterval(this.loadCommentsFromServer, this.props.pollInterval);
+	    $.ajax({
+	      url: '/api/getUser',
+	      dataType: 'json',
+	      cache: false,
+	      success: function (data) {
+	        this.setState({ user: data });
+	        this.render();
+	      }.bind(this),
+	      error: function (xhr, status, err) {
+	        console.error(this.props.url, status, err.toString());
+	      }.bind(this)
+	    });
 	  },
 	  render: function render() {
 	    return React.createElement(
 	      'div',
-	      { className: 'commentBox' },
+	      { className: 'task-box' },
 	      React.createElement(
 	        'h2',
 	        null,
 	        PROJECT.projectName
 	      ),
+	      React.createElement(_devs.DevBox, { isManager: this.state.user.isManager, loadTasks: this.loadTasksFromServer }),
 	      React.createElement(
-	        'h3',
-	        null,
-	        'Tasks'
+	        'div',
+	        { className: 'task-title' },
+	        React.createElement(
+	          'h3',
+	          null,
+	          'Tasks'
+	        ),
+	        React.createElement(_modal.ModalButton, { onSubmit: this.handleTaskSubmit, buttonTitle: 'Create task', windowTitle: 'Enter the name of the task' })
 	      ),
-	      React.createElement(_modal.ModalButton, { onSubmit: this.handleTaskSubmit, buttonTitle: 'Create task',
-	        windowTitle: 'Enter the name of the task' }),
 	      React.createElement(TaskList, { data: this.state.data })
 	    );
 	  }
@@ -6102,7 +6320,7 @@
 	    });
 	    return React.createElement(
 	      'div',
-	      { className: 'taskList' },
+	      { className: 'task-list' },
 	      taskNodes
 	    );
 	  }
@@ -6114,14 +6332,16 @@
 	  handle: function handle() {
 	    TASK = this.props.task;
 	    window.setTask();
+	    window.location.href = '#/tasks/comments';
 	  },
 	  render: function render() {
+	    var isFinished = this.props.task.isFinished ? 'finished' : '';
 	    return React.createElement(
 	      'div',
-	      { className: 'task' },
+	      { className: "task " + isFinished, onClick: this.handle },
 	      React.createElement(
 	        'a',
-	        { href: '#/tasks/comments', onClick: this.handle, className: 'taskName' },
+	        { className: 'taskName' },
 	        this.props.title
 	      )
 	    );
@@ -6131,10 +6351,12 @@
 	exports.TaskBox = TaskBox;
 
 /***/ },
-/* 68 */
-/***/ function(module, exports) {
+/* 69 */
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
+
+	var _modal = __webpack_require__(66);
 
 	var CommentBox = React.createClass({
 	  displayName: 'CommentBox',
@@ -6171,6 +6393,7 @@
 	      type: 'POST',
 	      data: {
 	        'comment': comment.text,
+	        'date': comment.date,
 	        'projectId': PROJECT._id,
 	        'taskId': TASK._id
 	      },
@@ -6182,20 +6405,97 @@
 	      }.bind(this)
 	    });
 	  },
+	  handleDevSubmit: function handleDevSubmit(dev) {
+	    $.ajax({
+	      url: '/api/addDevForTask',
+	      dataType: 'json',
+	      type: 'POST',
+	      data: {
+	        'email': dev.title,
+	        'projectId': PROJECT._id,
+	        'taskId': TASK._id
+	      },
+	      success: function (data) {
+	        TASK.author = data;
+	        this.setState({});
+	      }.bind(this),
+	      error: function (xhr, status, err) {
+	        //this.setState({data: comments});
+	      }.bind(this)
+	    });
+	  },
+	  handleFinishTask: function handleFinishTask() {
+	    $.ajax({
+	      url: '/api/finishTask',
+	      dataType: 'json',
+	      type: 'POST',
+	      data: {
+	        'projectId': PROJECT._id,
+	        'taskId': TASK._id
+	      },
+	      success: function (data) {
+	        TASK.isFinished = data.isFinished;
+	        this.setState({});
+	      }.bind(this),
+	      error: function (xhr, status, err) {
+	        //this.setState({data: comments});
+	      }.bind(this)
+	    });
+	  },
 	  getInitialState: function getInitialState() {
-	    return { data: [] };
+	    return {
+	      data: [],
+	      user: { isManager: false }
+	    };
 	  },
 	  componentDidMount: function componentDidMount() {
 	    this.loadCommentsFromServer();
+	    $.ajax({
+	      url: '/api/getUser',
+	      dataType: 'json',
+	      cache: false,
+	      success: function (data) {
+	        this.setState({ user: data });
+	        this.render();
+	      }.bind(this),
+	      error: function (xhr, status, err) {
+	        console.error(this.props.url, status, err.toString());
+	      }.bind(this)
+	    });
 	  },
 	  render: function render() {
+	    var commentForm = this.state.user._id == (TASK.author ? TASK.author._id : '') ? React.createElement(CommentForm, { onCommentSubmit: this.handleCommentSubmit }) : '';
+	    var developer = TASK.author ? React.createElement(
+	      'p',
+	      { className: 'name' },
+	      TASK.author.firstName + ' ' + TASK.author.lastName
+	    ) : '';
+	    var appointDev = !developer && this.state.user.isManager ? React.createElement(_modal.ModalButton, { onSubmit: this.handleDevSubmit,
+	      buttonTitle: 'Appoint developer', devScope: true, devs: true }) : '';
+	    var notFinished = !TASK.isFinished && commentForm ? React.createElement(
+	      'button',
+	      { className: 'btn btn-success', onClick: this.handleFinishTask },
+	      'Finish'
+	    ) : '';
 	    return React.createElement(
 	      'div',
-	      { className: 'commentBox' },
+	      { className: 'comment-box' },
 	      React.createElement(
 	        'h2',
 	        null,
-	        TASK.taskName
+	        PROJECT.projectName
+	      ),
+	      React.createElement(
+	        'div',
+	        { className: 'comment-title' },
+	        React.createElement(
+	          'h3',
+	          null,
+	          TASK.taskName
+	        ),
+	        notFinished,
+	        developer,
+	        appointDev
 	      ),
 	      React.createElement(
 	        'h3',
@@ -6203,7 +6503,7 @@
 	        'Comments'
 	      ),
 	      React.createElement(CommentList, { data: this.state.data }),
-	      React.createElement(CommentForm, { onCommentSubmit: this.handleCommentSubmit })
+	      commentForm
 	    );
 	  }
 	});
@@ -6215,13 +6515,13 @@
 	    var commentNodes = this.props.data.map(function (comment) {
 	      return React.createElement(
 	        Comment,
-	        { author: comment.author, key: comment._id },
+	        { author: comment.author, key: comment._id, date: comment.date },
 	        comment.text
 	      );
 	    });
 	    return React.createElement(
 	      'div',
-	      { className: 'commentList' },
+	      { className: 'comment-list' },
 	      commentNodes
 	    );
 	  }
@@ -6242,20 +6542,21 @@
 	    if (!text) {
 	      return;
 	    }
-	    this.props.onCommentSubmit({ text: text });
+	    this.props.onCommentSubmit({ text: text, date: new Date() });
 	    this.setState({ text: '' });
 	  },
 	  render: function render() {
 	    return React.createElement(
 	      'form',
-	      { className: 'commentForm', onSubmit: this.handleSubmit },
+	      { className: 'comment-form', onSubmit: this.handleSubmit },
 	      React.createElement('input', {
+	        className: 'form-control',
 	        type: 'text',
 	        placeholder: 'Say something...',
 	        value: this.state.text,
 	        onChange: this.handleTextChange
 	      }),
-	      React.createElement('input', { type: 'submit', value: 'Post' })
+	      React.createElement('input', { type: 'submit', value: 'Post', className: 'btn btn-primary' })
 	    );
 	  }
 	});
@@ -6269,13 +6570,26 @@
 	    return { __html: rawMarkup };
 	  },
 	  render: function render() {
+	    var date = new Date(this.props.date);
+	    var _ref = [date.getHours(), date.getMinutes(), date.getMonth() + 1, date.getDate(), date.getFullYear()];
+	    var hours = _ref[0];
+	    var minutes = _ref[1];
+	    var month = _ref[2];
+	    var date = _ref[3];
+	    var year = _ref[4];
+
 	    return React.createElement(
 	      'div',
 	      { className: 'comment' },
 	      React.createElement(
 	        'p',
-	        { className: 'commentAuthor' },
-	        this.props.author.firstName + " " + this.props.author.lastName
+	        { id: 'name' },
+	        this.props.author.firstName + ' ' + this.props.author.lastName
+	      ),
+	      React.createElement(
+	        'p',
+	        { id: 'date' },
+	        hours + ':' + minutes + '  ' + month + '.' + date + '.' + year
 	      ),
 	      React.createElement('span', { dangerouslySetInnerHTML: this.rawMarkup() })
 	    );

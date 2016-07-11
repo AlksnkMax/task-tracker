@@ -1,4 +1,5 @@
 import {ModalButton} from './modal.jsx';
+import {DevBox} from './devs.jsx';
 
 var TaskBox = React.createClass({
   loadTasksFromServer: function() {
@@ -7,7 +8,9 @@ var TaskBox = React.createClass({
         url: '/api/getTaskList',
         dataType: 'json',
         type: 'POST',
-        data: PROJECT,
+        data: {
+          '_id': PROJECT._id
+        },
         success: function(data) {
           this.setState({data: data});
         }.bind(this),
@@ -42,19 +45,35 @@ var TaskBox = React.createClass({
     });
   },
   getInitialState: function() {
-    return {data: []};
+    return {
+      data: [],
+      user: {isManager: false}
+    };
   },
   componentDidMount: function() {
     this.loadTasksFromServer();
-    setInterval(this.loadCommentsFromServer, this.props.pollInterval);
+    $.ajax({
+      url: '/api/getUser',
+      dataType: 'json',
+      cache: false,
+      success: function(data) {
+        this.setState({user: data});
+        this.render();
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
   },
   render: function() {
     return (
-      <div className="commentBox">
+      <div className="task-box">
         <h2>{PROJECT.projectName}</h2>
-        <h3>Tasks</h3>
-        <ModalButton onSubmit={this.handleTaskSubmit} buttonTitle='Create task'
-          windowTitle='Enter the name of the task'/>
+        <DevBox isManager={this.state.user.isManager} loadTasks={this.loadTasksFromServer}/>
+        <div className="task-title">
+          <h3>Tasks</h3>
+          <ModalButton onSubmit={this.handleTaskSubmit} buttonTitle='Create task' windowTitle='Enter the name of the task'/>
+        </div>
         <TaskList data={this.state.data} />
       </div>
     );
@@ -70,7 +89,7 @@ var TaskList = React.createClass({
       );
     });
     return (
-      <div className="taskList">
+      <div className="task-list">
         {taskNodes}
       </div>
     );
@@ -81,11 +100,13 @@ var Task = React.createClass({
   handle: function() {
     TASK = this.props.task;
     window.setTask();
+    window.location.href = '#/tasks/comments';
   },
   render: function() {
+    var isFinished = this.props.task.isFinished ? 'finished' : '';
     return (
-      <div className="task">
-        <a href={'#/tasks/comments'} onClick={this.handle} className="taskName">
+      <div className={"task " + isFinished} onClick={this.handle}>
+        <a className="taskName">
           {this.props.title}
         </a>
       </div>

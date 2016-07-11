@@ -3,19 +3,12 @@
   min-width: $container-sm;
 }
 
-/* MEDIA */
-@mixin respond-to($media) {
-  @if $media == mobile {
-    @media only screen and (max-device-width: 1280px) and (orientation: portrait) { @content; }
-  }
-}
-
-
-
 /* COLORS */
 
-$clBrown: #c5aca0;
-$clRed: #e64b55;
-$clDarkGrey: #e1e6e9;
-$clLightGrey: #ebefef;
-$clBgGrey: #f4f5f9;
+$clDarkBlue: #5faad3;
+$clLightBlue: #afd5e9;
+$clDarkGreen: #81cc81;
+$clLightGreen: #a4e2a4;
+$clDarkGrey: #d4d2d2;
+$clLightGrey: #e2e2e2;
+$clBlack: #000000;

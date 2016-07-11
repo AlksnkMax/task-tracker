@@ -36,18 +36,33 @@ var ProjectBox = React.createClass({
     });
   },
   getInitialState: function() {
-    return {data: []};
+    return {
+      data: [],
+      user: {isManager: false}
+    };
   },
   componentDidMount: function() {
     this.loadProjectsFromServer();
-    setInterval(this.loadCommentsFromServer, this.props.pollInterval);
+    $.ajax({
+      url: '/api/getUser',
+      dataType: 'json',
+      cache: false,
+      success: function(data) {
+        this.setState({user: data});
+        this.render();
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
   },
   render: function() {
+    var modal = this.state.user.isManager ? <ModalButton onSubmit={this.handleProjectSubmit} buttonTitle='Create project'
+      windowTitle='Enter the name of the project'/> : '';
     return (
-      <div>
+      <div className='project-container'>
         <h2>Projects</h2>
-        <ModalButton onSubmit={this.handleProjectSubmit} buttonTitle='Create project'
-          windowTitle='Enter the name of the project'/>
+        {modal}
         <ProjectList data={this.state.data}/>
       </div>
     );
@@ -64,7 +79,7 @@ var ProjectList = React.createClass({
       );
     });
     return (
-      <div className="projectList">
+      <div className="project-list">
         {projectNodes}
       </div>
     );
@@ -75,11 +90,12 @@ var Project = React.createClass({
   handle: function() {
     PROJECT = this.props.project;
     window.setProject();
+    window.location.href = '#/tasks';
   },
   render: function() {
     return (
-      <div className="project">
-        <a href={'#/tasks'} onClick={this.handle} className="projectName">
+      <div className="project" onClick={this.handle}>
+        <a className="project-name">
           {this.props.title}
         </a>
       </div>

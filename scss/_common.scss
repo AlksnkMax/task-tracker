@@ -1,20 +1,285 @@
 * {
-  outline: none;
-  text-decoration: none;
+  outline: none !important;
+  text-decoration: none !important;
+
 }
 
 html, body {
   width: 100%;
   height: 100%;
   margin: 0px;
-  overflow-x: hidden;
-  position: relative;
-}
-html {
-  overflow-y: hidden;
 }
 
-p {
-  font-family: 'Open Sans', sans-serif;
+p, a {
+  font-family: 'fontello', sans-serif;
   font-weight: 400;
+  margin: 0;
+}
+
+.btn {
+  background-color: $clLightBlue;
+  border: none;
+
+  &:hover {
+    background-color: $clDarkBlue;
+    border: none;
+  }
+}
+
+.form-signin, .form-signup {
+  text-align: center;
+  width: 750px;
+  margin: auto;
+
+  input, button {
+    margin-bottom: 10px;
+  }
+  h2 {
+    margin-top: 15%;
+  }
+  .checkbox {
+    text-align: left;
+  }
+}
+
+.main {
+  a.sign-out {
+    display: inline-block;
+    margin: 20px 0 0 70px;
+    font-size: 18px;
+    color: $clDarkBlue;
+  }
+  .user {
+    float: right;
+    margin: 10px 70px 0 0;
+    font-size: 16px;
+
+    .name {
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    .name, .email {
+      float: left;
+      display: inline-block;
+    }
+  }
+  h1 {
+    background-color: $clLightBlue;
+    clear: right;
+    padding: 20px 70px;
+    font-weight: bold;
+  }
+}
+
+.project-container {
+  h2 {
+    padding-left: 70px;
+    font-weight: 700;
+    float: left;
+    margin-top: 10px;
+  }
+  &>div>a {
+    float: left;
+    display: inline-block;
+    margin: 10px 0 25px 20px;
+  }
+  .project-list {
+    clear: left;
+
+    .project {
+      background-color: $clLightBlue;
+      font-size: 25px;
+      padding: 10px 70px;
+      margin-bottom: 3px;
+
+      &:hover {
+        cursor: pointer;
+        background-color: $clDarkBlue;
+      }
+      a {
+        color: $clBlack;
+      }
+    }
+  }
+}
+
+.task-box {
+  h2 {
+    padding-left: 70px;
+    font-weight: 700;
+    float: left;
+    margin-top: 10px;
+  }
+  .task-title {
+    height: 70px;
+    border-top: 3px solid $clLightBlue;
+    border-bottom: 3px solid $clLightBlue;
+    margin-bottom: 20px;
+    clear: left;
+
+    h3 {
+      padding-left: 70px;
+      float: left;
+    }
+    a {
+      float: left;
+      margin: 17px 5px 20px 20px;
+    }
+  }
+  .dev-box {
+    .btn {
+      float: left;
+      margin: 10px 5px 20px 20px;
+    }
+    .remove-true {
+      margin: 10px 10px 20px 0px;
+    }
+  }
+  .dev-list {
+    &>div {
+      padding-left: 70px;
+      margin-bottom: 10px;
+
+      p>span, a>span {
+        font-weight: bold;
+      }
+      p, a {
+        clear: left;
+      }
+    }
+  }
+  .task-list {
+    clear: left;
+
+    .task {
+      padding: 10px 70px;
+      font-size: 18px;
+      background-color: $clLightBlue;
+      margin-bottom: 2px;
+
+      &:hover {
+        cursor: pointer;
+        background-color: $clDarkBlue;
+      }
+      a {
+        color: $clBlack;
+      }
+    }
+    .finished {
+      background-color: $clLightGreen;
+
+      &:hover {
+        background-color: $clDarkGreen;
+      }
+    }
+  }
+}
+
+.comment-box {
+  h2 {
+    padding: 0 0 20px 70px;
+    border-bottom: 3px solid $clLightBlue;
+    font-weight: bold;
+  }
+  .comment-title {
+    h3 {
+      padding-left: 70px;
+      float: left;
+    }
+    button {
+      margin: 18px 0 0 20px;
+      background-color: $clLightGreen;
+
+      &:hover {
+        background-color: $clDarkGreen;
+      }
+    }
+    &>div>a {
+      margin: 18px 0 0 20px;
+      background-color: $clLightBlue;
+
+      &:hover {
+        background-color: $clDarkBlue;
+      }
+    }
+    .name {
+      clear: left;
+      padding-left: 70px
+    }
+  }
+  &>h3 {
+    border-top: 3px solid $clLightBlue;
+    padding: 15px 0 5px 70px;
+  }
+  .comment {
+    padding: 0 70px;
+    margin-bottom: 20px;
+
+    #name {
+      float: left;
+      margin-right: 20px;
+      font-weight: bold;
+    }
+    #date {
+      margin: 5px;
+    }
+  }
+  .comment-form {
+    margin-bottom: 30px;
+
+    .form-control {
+      float: left;
+      width: calc(100% - 213px);
+      margin: 0 3px 0 70px;
+    }
+    .btn {
+      width: 70px;
+      height: 34px;
+    }
+  }
+}
+
+.modal-content {
+  margin-top: 25%;
+  padding-top: 20px;
+  text-align: center;
+
+  input {
+    width: 80%;
+    margin: 0 auto 10px auto;
+  }
+  .modal-footer {
+    height: 60px;
+    margin-top: 15px;
+
+    button {
+      float: right !important;
+      margin: 0 !important;
+      background-color: $clLightGrey;
+
+      &:hover {
+        background-color: $clDarkGrey;
+      }
+    }
+    .btn-ok {
+      background-color: $clLightBlue;
+      margin-left: 10px !important;
+
+      &:hover {
+        background-color: $clDarkBlue;
+      }
+    }
+  }
+  .dev-list {
+    div {
+      padding: 0;
+      
+      a:hover {
+        cursor: pointer;
+      }
+      span {
+        margin-right: 10px;
+      }
+    }
+  }
 }
